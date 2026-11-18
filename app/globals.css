@@ -155,8 +155,9 @@ a { color: inherit; }
 .calendar-export-copy strong { color: var(--brand-navy); font-size: 13px; }
 .calendar-export-copy p { margin: 4px 0 0; color: #747988; font-size: 11px; line-height: 1.4; }
 .calendar-export-button { min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; color: #fff; background: var(--brand-blue); box-shadow: 0 5px 12px rgba(45,52,139,.13); font-size: 12px; font-weight: 750; transition: background .18s, transform .18s, box-shadow .18s; }
-.calendar-export-button:hover { background: #222a78; box-shadow: 0 8px 18px rgba(45,52,139,.18); transform: translateY(-1px); }
-.calendar-export-button:active { transform: scale(.98); }
+.calendar-export-button:hover:not(:disabled) { background: #222a78; box-shadow: 0 8px 18px rgba(45,52,139,.18); transform: translateY(-1px); }
+.calendar-export-button:active:not(:disabled) { transform: scale(.98); }
+.calendar-export-button:disabled { color: #777d90; background: #e9eaf1; box-shadow: none; cursor: not-allowed; }
 .calendar-export-message { grid-column: 1 / -1; margin: -2px 0 0 49px; color: var(--green); font-size: 11px; line-height: 1.45; }
 .result-actions { margin: 21px 2px 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .change-person-button { padding: 8px 0; display: inline-flex; align-items: center; gap: 8px; border: 0; color: var(--brand-blue); background: transparent; font-size: 14px; font-weight: 750; }

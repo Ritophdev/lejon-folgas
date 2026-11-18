@@ -361,6 +361,22 @@ export default function EmployeePortal() {
                   <div className="habitual-hours"><Clock3 size={17} /><span>Horário habitual</span><strong>{usualHours?.startTime && usualHours?.endTime ? `${usualHours.startTime} às ${usualHours.endTime}` : "Não informado"}</strong></div>
                 </article>
 
+                <div className="calendar-export">
+                  <div className="calendar-export-copy">
+                    <span className="calendar-export-icon"><CalendarDays size={19} aria-hidden="true" /></span>
+                    <div>
+                      <strong>Leve suas folgas com você</strong>
+                      <p>{upcomingOffShifts.length > 0
+                        ? `${upcomingOffShifts.length} ${upcomingOffShifts.length === 1 ? "folga publicada" : "folgas publicadas"} · arquivo compatível com iPhone e Android.`
+                        : "Ainda não há folgas futuras publicadas para baixar."}</p>
+                    </div>
+                  </div>
+                  <button type="button" className="calendar-export-button" onClick={() => void saveFolgasToPhone()} disabled={upcomingOffShifts.length === 0}>
+                    <Download size={17} aria-hidden="true" /> {upcomingOffShifts.length > 0 ? "Salvar na agenda" : "Sem folgas para baixar"}
+                  </button>
+                  {calendarMessage && <p className="calendar-export-message" role="status" aria-live="polite">{calendarMessage}</p>}
+                </div>
+
                 <section className="week-panel" aria-labelledby="week-title">
                   <div className="week-heading">
                     <div>
@@ -395,21 +411,6 @@ export default function EmployeePortal() {
                         )) : <p>Nenhum feriado cadastrado para esta semana.</p>}
                       </div>
                     </div>
-                    {upcomingOffShifts.length > 0 && (
-                      <div className="calendar-export">
-                        <div className="calendar-export-copy">
-                          <span className="calendar-export-icon"><CalendarDays size={19} aria-hidden="true" /></span>
-                          <div>
-                            <strong>Leve suas folgas com você</strong>
-                            <p>{upcomingOffShifts.length} {upcomingOffShifts.length === 1 ? "folga publicada" : "folgas publicadas"} · arquivo compatível com iPhone e Android.</p>
-                          </div>
-                        </div>
-                        <button type="button" className="calendar-export-button" onClick={() => void saveFolgasToPhone()}>
-                          <Download size={17} aria-hidden="true" /> Salvar na agenda
-                        </button>
-                        {calendarMessage && <p className="calendar-export-message" role="status" aria-live="polite">{calendarMessage}</p>}
-                      </div>
-                    )}
                   </> : <div className="notice notice-empty">Selecione uma semana publicada.</div>}
                 </section>
               </>
