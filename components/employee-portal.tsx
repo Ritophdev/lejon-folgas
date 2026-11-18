@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, Check, ChevronDown, Clock3, Download, LockKeyhole, Search, Sun, Umbrella, RefreshCw, X } from "lucide-react";
-import { dateAtDay, formatFullDate, formatShortDate, formatWeekRange, parseLocalDate, SHORT_WEEKDAYS, shiftDate, todayIso, toIsoDate } from "@/lib/dates";
+import { CalendarDays, Check, ChevronDown, Clock3, LockKeyhole, Search, Sun, Umbrella, RefreshCw, X } from "lucide-react";
+import { dateAtDay, formatFullDate, formatShortDate, formatWeekRange, parseLocalDate, SHORT_WEEKDAYS, todayIso } from "@/lib/dates";
 import { readDemoState, SELECTED_EMPLOYEE_KEY } from "@/lib/demo-data";
 import { withBasePath } from "@/lib/site-path";
 import { loadPublishedData, supabaseConfigState } from "@/lib/supabase";
 import type { DemoState, Employee, Holiday, ScheduleWeek, Shift } from "@/lib/types";
 import PwaRegister from "@/components/pwa-register";
+import InstallAppCard from "@/components/install-app-card";
 
 function LejonMark() {
   return (
@@ -34,43 +35,6 @@ function weekForToday(weeks: ScheduleWeek[]): string {
     ?? weeks.find((week) => week.status === "published" && week.endDate >= now)?.id
     ?? weeks[0]?.id
     ?? "";
-}
-
-function calendarDate(value: string): string {
-  return value.replaceAll("-", "");
-}
-
-function nextCalendarDate(value: string): string {
-  return calendarDate(toIsoDate(shiftDate(parseLocalDate(value), 1)));
-}
-
-function makeFolgasCalendar(employeeId: string, shifts: Shift[]): string {
-  const stamp = new Date().toISOString().replaceAll("-", "").replaceAll(":", "").replace(/\.\d{3}Z$/, "Z");
-  const safeEmployeeId = employeeId.replace(/[^a-zA-Z0-9-]/g, "-");
-  const events = shifts.map((shift) => [
-    "BEGIN:VEVENT",
-    `UID:lejon-folgas-${safeEmployeeId}-${calendarDate(shift.date)}@lejonatacarejo.com.br`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${calendarDate(shift.date)}`,
-    `DTEND;VALUE=DATE:${nextCalendarDate(shift.date)}`,
-    "SUMMARY:Folga - Lejon Atacarejo",
-    "DESCRIPTION:Folga conforme escala publicada. Consulte o portal para atualizacoes.",
-    "STATUS:CONFIRMED",
-    "TRANSP:TRANSPARENT",
-    "END:VEVENT",
-  ].join("\r\n"));
-
-  return [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Lejon Atacarejo//Folgas//PT-BR",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "X-WR-CALNAME:Minhas folgas - Lejon Atacarejo",
-    ...events,
-    "END:VCALENDAR",
-    "",
-  ].join("\r\n");
 }
 
 function WeekCalendar({ week, employeeId, holidays }: { week: ScheduleWeek; employeeId: string; holidays: Holiday[] }) {
@@ -110,7 +74,6 @@ export default function EmployeePortal() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [calendarMessage, setCalendarMessage] = useState("");
 
   const refresh = useCallback(async (quiet = false, employeeId?: string) => {
     const config = supabaseConfigState();
@@ -163,13 +126,6 @@ export default function EmployeePortal() {
   }, [activeEmployees, query]);
   const publishedWeeks = useMemo(() => data.weeks.filter((week) => week.status === "published").sort((a, b) => a.startDate.localeCompare(b.startDate)), [data.weeks]);
   const selectedWeek = publishedWeeks.find((week) => week.id === selectedWeekId) ?? null;
-  const upcomingOffShifts = useMemo(() => {
-    if (!selected) return [];
-    const today = todayIso();
-    return publishedWeeks
-      .flatMap((week) => week.shifts.filter((shift) => shift.employeeId === selected.id && shift.status === "off" && shift.date >= today))
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }, [publishedWeeks, selected]);
   const upcomingOff = selected ? findUpcomingOff(data, selected.id) : null;
   const selectedWeekShifts = selected && selectedWeek ? selectedWeek.shifts.filter((shift) => shift.employeeId === selected.id) : [];
   const usualHours = selectedWeekShifts.find((shift) => shift.status === "work" && shift.startTime && shift.endTime)
@@ -178,7 +134,6 @@ export default function EmployeePortal() {
 
   function chooseEmployee(employee: Employee) {
     setSelected(employee);
-    setCalendarMessage("");
     setQuery(employee.name);
     setSuggestionsOpen(false);
   }
@@ -206,39 +161,7 @@ export default function EmployeePortal() {
   function changeEmployee() {
     window.localStorage.removeItem(SELECTED_EMPLOYEE_KEY);
     setSelected(null);
-    setCalendarMessage("");
     setQuery("");
-  }
-
-  async function saveFolgasToPhone() {
-    if (!selected || upcomingOffShifts.length === 0) return;
-    const fileName = "minhas-folgas-lejon.ics";
-    const calendar = makeFolgasCalendar(selected.id, upcomingOffShifts);
-    const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" });
-
-    if (navigator.share && typeof File !== "undefined") {
-      const file = new File([blob], fileName, { type: "text/calendar;charset=utf-8" });
-      if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ title: "Minhas folgas - Lejon Atacarejo", files: [file] });
-        setCalendarMessage("Arquivo compartilhado. Abra-o no celular para adicionar as folgas à agenda.");
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      }
-      }
-    }
-
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = fileName;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-    setCalendarMessage("Arquivo baixado. Toque nele no celular para adicionar as folgas à agenda.");
   }
 
   return (
@@ -321,6 +244,7 @@ export default function EmployeePortal() {
                 </button>
               </form>
             )}
+            <InstallAppCard />
             {!isLoading && !loadError && activeEmployees.length === 0 && (
               <p className="helper-copy">Sua escala ainda não está disponível. Fale com o RH para saber quando ela será publicada.</p>
             )}
@@ -360,22 +284,7 @@ export default function EmployeePortal() {
                   <div className="off-calendar-art" aria-hidden="true"><CalendarDays size={50} strokeWidth={1.65} /></div>
                   <div className="habitual-hours"><Clock3 size={17} /><span>Horário habitual</span><strong>{usualHours?.startTime && usualHours?.endTime ? `${usualHours.startTime} às ${usualHours.endTime}` : "Não informado"}</strong></div>
                 </article>
-
-                <div className="calendar-export">
-                  <div className="calendar-export-copy">
-                    <span className="calendar-export-icon"><CalendarDays size={19} aria-hidden="true" /></span>
-                    <div>
-                      <strong>Leve suas folgas com você</strong>
-                      <p>{upcomingOffShifts.length > 0
-                        ? `${upcomingOffShifts.length} ${upcomingOffShifts.length === 1 ? "folga publicada" : "folgas publicadas"} · arquivo compatível com iPhone e Android.`
-                        : "Ainda não há folgas futuras publicadas para baixar."}</p>
-                    </div>
-                  </div>
-                  <button type="button" className="calendar-export-button" onClick={() => void saveFolgasToPhone()} disabled={upcomingOffShifts.length === 0}>
-                    <Download size={17} aria-hidden="true" /> {upcomingOffShifts.length > 0 ? "Salvar na agenda" : "Sem folgas para baixar"}
-                  </button>
-                  {calendarMessage && <p className="calendar-export-message" role="status" aria-live="polite">{calendarMessage}</p>}
-                </div>
+                <InstallAppCard />
 
                 <section className="week-panel" aria-labelledby="week-title">
                   <div className="week-heading">
