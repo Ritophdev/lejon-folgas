@@ -41,10 +41,10 @@ jobs:
             echo "base_path=/$repository_name" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Check Supabase configuration
+      - name: Validate Supabase configuration
         run: |
-          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
-            echo "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in the repository's Actions variables before deploying."
+          if { [ -n "$NEXT_PUBLIC_SUPABASE_URL" ] && [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; } || { [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] && [ -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; }; then
+            echo "Set both Supabase variables or leave both empty to publish the fictional demo."
             exit 1
           fi
         env:

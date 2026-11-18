@@ -34,10 +34,12 @@ O workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages
 
 1. Crie um repositório GitHub e envie este projeto para a branch `main`.
 2. Em **Settings → Pages**, escolha **GitHub Actions** como fonte de publicação.
-3. Em **Settings → Secrets and variables → Actions → Variables**, crie estas variáveis do repositório:
+3. Para conectar o banco, em **Settings → Secrets and variables → Actions → Variables**, crie estas variáveis do repositório:
    - `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto Supabase.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave pública `anon`/publishable do projeto.
 4. Faça push para `main` ou execute o workflow manualmente na aba **Actions**.
+
+Se ainda não criou o projeto Supabase, deixe as duas variáveis ausentes. O workflow publica a demonstração fictícia em modo local; quando as duas variáveis forem adicionadas, a aplicação passa a ler e gravar no Supabase. Não configure apenas uma delas.
 
 O workflow detecta automaticamente se a publicação usa um subcaminho (`/<nome-do-repositório>`) ou o domínio raiz `<usuário>.github.io`. A exportação inclui barra final nas rotas para que páginas como `/admin/` funcionem no GitHub Pages.
 
