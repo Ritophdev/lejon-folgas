@@ -558,7 +558,7 @@ export default function AdminPage() {
   }
 
   if (config === "incomplete") {
-    return <main className="admin-page"><div className="admin-topbar"><LejonMark /><Link href="/" className="admin-back-link"><ArrowLeft size={16} /> Portal do colaborador</Link></div><div className="login-card"><h1>Configuração incompleta</h1><p>Defina <code>NEXT_PUBLIC_SUPABASE_URL</code> e <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> no arquivo <code>.env.local</code>.</p></div></main>;
+    return <main className="admin-page"><div className="admin-topbar"><LejonMark /><Link href="/" className="admin-back-link"><ArrowLeft size={16} /> Portal do colaborador</Link></div><div className="login-card"><h1>Configuração incompleta</h1><p>Defina <code>NEXT_PUBLIC_SUPABASE_URL</code> e <code>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> no arquivo <code>.env.local</code>.</p></div></main>;
   }
 
   if (!authorized) {

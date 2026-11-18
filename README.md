@@ -24,9 +24,9 @@ Sem variáveis Supabase, o portal abre a demonstração local com dados fictíci
    values ('UUID_DO_USUARIO_AUTH', 'rh');
    ```
 
-6. Para testar localmente, copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` com os valores do projeto Supabase.
+6. Para testar localmente, copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` com os valores do projeto Supabase.
 
-O frontend usa apenas a chave pública `anon`/publishable. Ela estará visível no JavaScript baixado pelo navegador, como esperado para uma aplicação cliente. **Nunca** coloque `service_role` no frontend, no repositório ou nas variáveis `NEXT_PUBLIC_*`. Mantenha RLS habilitado; o schema configura as regras para a consulta pública de colaboradores ativos e semanas publicadas, e reserva gravações para usuários autorizados em `admin_users`.
+O frontend usa somente a chave pública `publishable` (ou `anon` legado). Ela estará visível no JavaScript baixado pelo navegador, como esperado para uma aplicação cliente. **Nunca** coloque `service_role`/secret no frontend, no repositório ou nas variáveis `NEXT_PUBLIC_*`. Mantenha RLS habilitado; o schema configura as regras para a consulta pública de colaboradores ativos e semanas publicadas, e reserva gravações para usuários autorizados em `admin_users`.
 
 ## Publicar em GitHub Pages
 
@@ -36,10 +36,10 @@ O workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages
 2. Em **Settings → Pages**, escolha **GitHub Actions** como fonte de publicação.
 3. Para conectar o banco, em **Settings → Secrets and variables → Actions → Variables**, crie estas variáveis do repositório:
    - `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto Supabase.
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave pública `anon`/publishable do projeto.
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: chave pública `publishable` do projeto. `NEXT_PUBLIC_SUPABASE_ANON_KEY` também é aceito para projetos com a chave legada.
 4. Faça push para `main` ou execute o workflow manualmente na aba **Actions**.
 
-Se ainda não criou o projeto Supabase, deixe as duas variáveis ausentes. O workflow publica a demonstração fictícia em modo local; quando as duas variáveis forem adicionadas, a aplicação passa a ler e gravar no Supabase. Não configure apenas uma delas.
+Se ainda não criou o projeto Supabase, deixe as variáveis ausentes. O workflow publica a demonstração fictícia em modo local; quando URL e chave pública forem adicionadas, a aplicação passa a ler e gravar no Supabase. Não configure apenas uma delas.
 
 O workflow detecta automaticamente se a publicação usa um subcaminho (`/<nome-do-repositório>`) ou o domínio raiz `<usuário>.github.io`. A exportação inclui barra final nas rotas para que páginas como `/admin/` funcionem no GitHub Pages.
 
